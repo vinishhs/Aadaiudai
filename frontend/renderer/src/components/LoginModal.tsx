@@ -20,13 +20,24 @@ const LoginModal: React.FC = () => {
 
     useEffect(() => {
         if (showLoginModal && !window.recaptchaVerifier) {
-            window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                'size': 'invisible',
-                'callback': (response: any) => {
-                    // reCAPTCHA solved, allow signInWithPhoneNumber.
-                }
-            });
+            try {
+                window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                    'size': 'invisible',
+                    'callback': () => {
+                        console.log('reCAPTCHA solved');
+                    }
+                });
+            } catch (err) {
+                console.error('Error initializing reCAPTCHA', err);
+            }
         }
+
+        return () => {
+            if (window.recaptchaVerifier) {
+                window.recaptchaVerifier.clear();
+                window.recaptchaVerifier = null;
+            }
+        };
     }, [showLoginModal]);
 
     const handleSendOtp = async (e: React.FormEvent) => {
@@ -36,13 +47,20 @@ const LoginModal: React.FC = () => {
 
         try {
             const appVerifier = window.recaptchaVerifier;
+            if (!appVerifier) throw new Error('reCAPTCHA not initialized');
+
             const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+91${phoneNumber}`;
             const result = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
             setConfirmationResult(result);
             setStep('OTP');
         } catch (err: any) {
             console.error(err);
-            setError('Failed to send OTP. Please check the number.');
+            setError(err.message || 'Failed to send OTP. Please check the number.');
+            // Clear verifier on error to allow clean retry
+            if (window.recaptchaVerifier) {
+                window.recaptchaVerifier.clear();
+                window.recaptchaVerifier = null;
+            }
         } finally {
             setLoading(false);
         }
@@ -122,7 +140,6 @@ const LoginModal: React.FC = () => {
                                     />
                                 </div>
                                 <button
-                                    id="recaptcha-container"
                                     type="submit"
                                     disabled={loading}
                                     className="w-full py-4 bg-black text-white rounded-xl font-outfit font-medium hover:bg-gray-900 transition-all shadow-lg active:scale-[0.98]"
@@ -175,6 +192,9 @@ const LoginModal: React.FC = () => {
                         )}
 
                         {error && <p className="mt-4 text-center text-red-500 text-sm font-inter">{error}</p>}
+
+                        {/* Permanent reCAPTCHA container - MUST stay in DOM while modal is open */}
+                        <div id="recaptcha-container"></div>
                     </motion.div>
                 </div>
             )}
