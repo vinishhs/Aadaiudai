@@ -13,9 +13,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     return (
         <motion.div
             className="group relative cursor-pointer"
-            initial={{ opacity: 0, y: 20 }}
-            whileHover={{ y: -5 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
+            whileHover={{ y: -8 }}
+            transition={{ duration: 0.5, ease: [0.33, 1, 0.68, 1] }}
         >
             {/* Image Container */}
             <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-gray-100">
