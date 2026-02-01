@@ -3,6 +3,8 @@ import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import TitleBar from "@/components/TitleBar";
 import SmoothScroll from "@/components/SmoothScroll";
+import { AuthProvider } from "@/context/AuthContext";
+import LoginModal from "@/components/LoginModal";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -29,12 +31,15 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${outfit.variable} font-sans antialiased text-gray-900 bg-white selection:bg-black selection:text-white`}
       >
-        <TitleBar />
-        <SmoothScroll>
-          <main className="pt-10 min-h-screen">
-            {children}
-          </main>
-        </SmoothScroll>
+        <AuthProvider>
+          <TitleBar />
+          <LoginModal />
+          <SmoothScroll>
+            <main className="pt-10 min-h-screen">
+              {children}
+            </main>
+          </SmoothScroll>
+        </AuthProvider>
       </body>
     </html>
   );

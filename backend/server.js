@@ -7,7 +7,21 @@ import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import productRoutes from './routes/productRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 
+import admin from 'firebase-admin';
+import fs from 'fs';
+
 dotenv.config();
+
+// Initialize Firebase Admin
+if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH && fs.existsSync(process.env.FIREBASE_SERVICE_ACCOUNT_PATH)) {
+    const serviceAccount = JSON.parse(fs.readFileSync(process.env.FIREBASE_SERVICE_ACCOUNT_PATH, 'utf8'));
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
+    });
+    console.log('Firebase Admin Initialized'.blue.bold);
+} else {
+    console.warn('Firebase Admin NOT initialized: FIREBASE_SERVICE_ACCOUNT_PATH missing or file not found.'.yellow.bold);
+}
 
 connectDB();
 

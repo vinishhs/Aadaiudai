@@ -1,15 +1,30 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Product } from '@/services/api';
+import { FiHeart } from 'react-icons/fi';
+import { useAuthAction } from '@/hooks/useAuthAction';
+import { useAuth } from '@/context/AuthContext';
 
 interface ProductCardProps {
     product: Product;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+    const { runWithAuth } = useAuthAction();
+    const { user } = useAuth();
+    const [isWishlisted, setIsWishlisted] = useState(false);
+
+    const handleWishlist = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        runWithAuth(() => {
+            setIsWishlisted(!isWishlisted);
+            console.log(`Action Resumed: Wishlisted ${product.name}`);
+        }, { type: 'WISHLIST', productId: product._id });
+    };
+
     return (
         <motion.div
             className="group relative cursor-pointer"
@@ -28,6 +43,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
                 {/* Overlay Gradient (Subtle) */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+                {/* Wishlist Button */}
+                <button
+                    onClick={handleWishlist}
+                    className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-sm transition-all duration-300 hover:bg-white active:scale-90"
+                >
+                    <div className={isWishlisted ? "text-black" : "text-gray-400"}>
+                        <FiHeart size={18} fill={isWishlisted ? "currentColor" : "none"} />
+                    </div>
+                </button>
             </div>
 
             {/* Details */}
